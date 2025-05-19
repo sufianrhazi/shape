@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -e
+cd "$(dirname "$0")/.."
+
+if ! command -v jo > /dev/null; then
+    echo -n "$(tput setaf 1)Error: jo is required.$(tput sgr0) Please install via: Please install, via https://github.com/jpmens/jo"
+    exit 1
+fi
+
+find src -type f -name '*.test.*' | while read -r TEST_SRC; do
+    if [ "$TEST_SRC" != "src/performance.test.tsx" ] || [ "$ARG" == "--perf" ]; then
+        jo src="/$TEST_SRC"
+    fi
+done | jo -a > test-manifest.json
+
+npm exec -- vite --open "$@"

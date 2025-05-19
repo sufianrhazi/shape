@@ -1,0 +1,56 @@
+{
+  "name": "@srhazi/shape",
+  "version": "1.0.0",
+  "description": "Composable runtime value checks that play well with TypeScript's type narrowing",
+  "main": "dist/shape.js",
+  "type": "module",
+  "files": [
+    "./dist/shape.mjs",
+    "./dist/shape.mjs.map",
+    "./dist/shape.cjs",
+    "./dist/shape.cjs.map",
+    "./dist/shape.d.ts",
+    "./dist/shape.d.ts.map"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/shape.mjs",
+      "types": "./dist/shape.d.ts",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "devDependencies": {
+    "@ianvs/prettier-plugin-sort-imports": "^4.2.1",
+    "@srhazi/gooey-test": "^0.8.0",
+    "@srhazi/gooey-vite-plugin": "^0.1.0",
+    "@typescript-eslint/eslint-plugin": "^8.32.0",
+    "@typescript-eslint/parser": "^8.32.0",
+    "esbuild": "0.24.0",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react": "7.37.1",
+    "prettier": "3.3.3",
+    "typescript": "^5.8.3",
+    "vite": "latest"
+  },
+  "scripts": {
+    "test": "s/test",
+    "build": "s/build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sufianrhazi/shape.git"
+  },
+  "keywords": [
+    "typescript",
+    "schema",
+    "validation",
+    "data",
+    "validation"
+  ],
+  "author": "Sufian Rhazi",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sufianrhazi/shape/issues"
+  },
+  "homepage": "https://github.com/sufianrhazi/shape#readme"
+}

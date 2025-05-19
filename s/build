@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+set -e
+cd "$(dirname "$0")/.."
+
+trap "exit" INT TERM
+trap "kill 0" EXIT
+
+VERSION=$(jq .version package.json)
+
+echo "Building version $(tput bold)${VERSION}$(tput sgr0)..."
+
+echo "Step 1: $(tput setaf 3)lint$(tput sgr0)..."
+find src -type f \( -name '*.ts' \) -print0 | xargs -I{} npm exec -- eslint {}
+
+echo "Step 2: $(tput setaf 3)run tests$(tput sgr0)..."
+s/test --clearScreen=false > /dev/null 2>&1 &
+
+read -p "Did tests pass? (type yes/no): " -r DONE
+if [ "$DONE" != "yes" ]; then
+    echo "Aborting"
+    exit 1
+fi
+
+echo "Step 3: $(tput setaf 3)Cleaning ./dist/$(tput sgr0)..."
+rm -rf ./dist/
+
+echo "Step 4: $(tput setaf 3)Building types$(tput sgr0)..."
+npm exec -- tsc -p ./tsconfig.build.json
+
+echo "Step 5: $(tput setaf 3)Bundling commonjs version ${VERSION}$(tput sgr0)..."
+npm exec -- esbuild --define:LIB_VERSION="${VERSION}" --bundle src/shape.ts --sourcemap --target=es2020 --format=cjs --outfile=dist/shape.cjs
+
+echo "Step 6: $(tput setaf 3)Bundling esm version ${VERSION}$(tput sgr0)..."
+npm exec -- esbuild --define:LIB_VERSION="${VERSION}" --bundle src/shape.ts --sourcemap --target=es2020 --format=esm --outfile=dist/shape.mjs
+
+echo "$(tput setaf 2)ALL DONE!$(tput sgr0)"
