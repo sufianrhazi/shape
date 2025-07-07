@@ -20,6 +20,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // src/shape.ts
 var shape_exports = {};
 __export(shape_exports, {
+  is: () => is,
   isArray: () => isArray,
   isArrayOf: () => isArrayOf,
   isBigint: () => isBigint,
@@ -30,26 +31,34 @@ __export(shape_exports, {
   isFunction: () => isFunction,
   isNull: () => isNull,
   isNumber: () => isNumber,
+  isRecordOf: () => isRecordOf,
   isShape: () => isShape,
   isString: () => isString,
   isSymbol: () => isSymbol,
+  isTruthy: () => isTruthy,
   isUndefined: () => isUndefined,
+  isUnknown: () => isUnknown,
   version: () => version
 });
 module.exports = __toCommonJS(shape_exports);
-var version = "1.0.0";
+var version = "1.1.0";
 var isString = (val) => typeof val === "string";
 var isNumber = (val) => typeof val === "number";
 var isBigint = (val) => typeof val === "bigint";
 var isBoolean = (val) => typeof val === "boolean";
 var isSymbol = (val) => typeof val === "symbol";
 var isUndefined = (val) => val === void 0;
+var isUnknown = (val) => true;
 var isNull = (val) => val === null;
 var isArray = (val) => Array.isArray(val);
 var isFunction = (val) => typeof val === "function";
+function isTruthy(val) {
+  return !!val;
+}
 function isExact(constant) {
   return isEnum(constant);
 }
+var is = isExact;
 function isEnum(...values) {
   return (val) => values.some((which) => which === val);
 }
@@ -62,6 +71,9 @@ function isArrayOf(check) {
   return (val) => {
     return Array.isArray(val) && val.every((item) => check(item));
   };
+}
+function isRecordOf(isThing) {
+  return (record) => !!(typeof record === "object" && record && !Array.isArray(record) && Object.values(record).every((value) => isThing(value)));
 }
 function isShape(shape) {
   return (val) => {
