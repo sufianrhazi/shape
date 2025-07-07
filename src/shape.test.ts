@@ -11,6 +11,7 @@ import {
     isFunction,
     isNull,
     isNumber,
+    isRecordOf,
     isShape,
     isString,
     isSymbol,
@@ -33,6 +34,18 @@ suite('isArrayOf', () => {
 
     test('nonarray fails', () => {
         assert.is(false, isArrayOf(isNumber)({ 0: 0, length: 1 }));
+    });
+});
+
+suite('isRecordOf', () => {
+    test('numbers', () => {
+        assert.is(true, isRecordOf(isNumber)({ foo: 1, bar: 2, baz: 3 }));
+        assert.is(false, isRecordOf(isNumber)([1, 2, 3]));
+        assert.is(false, isRecordOf(isNumber)({ foo: 1, bar: 'a', baz: 3 }));
+    });
+
+    test('empty passes', () => {
+        assert.is(true, isRecordOf(isNumber)({}));
     });
 });
 

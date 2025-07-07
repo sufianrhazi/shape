@@ -5,40 +5,51 @@
 export const version: string = LIB_VERSION;
 
 /**
- * Each IsShape<T> is a function that proves an unknown value is of type T
+ * Each AssertFn<T> is a function that proves an unknown value is of type T
  */
-export type IsShape<T> = (val: unknown) => val is T;
+export type AssertFn<T> = (val: unknown) => val is T;
 
 /**
- * Given an IsShape<T> function, ShapeType<typeof isMyShape> gives you the type asserted by the shape.
+ * Turn an AssertFn<T> type into just T
  */
-export type ShapeType<V> = V extends IsShape<infer A> ? A : never;
+export type AssertFnType<V> = V extends AssertFn<infer A> ? A : never;
 
-export const isString: IsShape<string> = (val): val is string =>
+export const isString: AssertFn<string> = (val): val is string =>
     typeof val === 'string';
 
-export const isNumber: IsShape<number> = (val): val is number =>
+export const isNumber: AssertFn<number> = (val): val is number =>
     typeof val === 'number';
 
-export const isBigint: IsShape<bigint> = (val): val is bigint =>
+export const isBigint: AssertFn<bigint> = (val): val is bigint =>
     typeof val === 'bigint';
 
-export const isBoolean: IsShape<boolean> = (val): val is boolean =>
+export const isBoolean: AssertFn<boolean> = (val): val is boolean =>
     typeof val === 'boolean';
 
-export const isSymbol: IsShape<symbol> = (val): val is symbol =>
+export const isSymbol: AssertFn<symbol> = (val): val is symbol =>
     typeof val === 'symbol';
 
-export const isUndefined: IsShape<undefined> = (val): val is undefined =>
+export const isUndefined: AssertFn<undefined> = (val): val is undefined =>
     val === undefined;
 
-export const isNull: IsShape<null> = (val): val is null => val === null;
+export const isUnknown: AssertFn<unknown> = (val): val is unknown => true;
 
-export const isArray: IsShape<unknown[]> = (val): val is unknown[] =>
+export const isNull: AssertFn<null> = (val): val is null => val === null;
+
+export const isArray: AssertFn<unknown[]> = (val): val is unknown[] =>
     Array.isArray(val);
 
-export const isFunction: IsShape<() => unknown> = (val): val is () => unknown =>
-    typeof val === 'function';
+export const isFunction: AssertFn<() => unknown> = (
+    val
+): val is () => unknown => typeof val === 'function';
+
+export function isTruthy<T>(val: T): val is Exclude<
+    T,
+    // all values are truthy except false, 0, -0, 0n, "", null, undefined, NaN, and document.all
+    0 | -0 | 0n | '' | null | undefined
+> {
+    return !!val;
+}
 
 /**
  * Produces a check that the value is exactly the constant provided.
@@ -46,6 +57,11 @@ export const isFunction: IsShape<() => unknown> = (val): val is () => unknown =>
 export function isExact<const T>(constant: T): (val: unknown) => val is T {
     return isEnum(constant);
 }
+
+/**
+ * Produces a check that the value is exactly the constant provided.
+ */
+export const is: typeof isExact = isExact;
 
 /**
  * Produces a check that the value is one of exactly the constants provided.
@@ -57,10 +73,10 @@ export function isEnum<const T>(...values: T[]): (val: unknown) => val is T {
 /**
  * Produces a check that satisfies one of the provided checks.
  */
-export function isEither<X extends IsShape<any>[]>(
+export function isEither<X extends AssertFn<any>[]>(
     ...checks: X
-): (val: unknown) => val is ShapeType<X[number]> {
-    return (val: unknown): val is ShapeType<X[number]> => {
+): (val: unknown) => val is AssertFnType<X[number]> {
+    return (val: unknown): val is AssertFnType<X[number]> => {
         return checks.some((check) => check(val));
     };
 }
@@ -68,19 +84,34 @@ export function isEither<X extends IsShape<any>[]>(
 /**
  * Produces a check that the value is an array of items that satisfy the provided checks.
  */
-export function isArrayOf<T>(check: IsShape<T>): (val: unknown) => val is T[] {
+export function isArrayOf<T>(check: AssertFn<T>): (val: unknown) => val is T[] {
     return (val: unknown): val is T[] => {
         return Array.isArray(val) && val.every((item) => check(item));
     };
 }
 
 /**
+ * Produces a check that the value is an object whose keys all satisfy the provided check
+ */
+export function isRecordOf<T>(isThing: AssertFn<T>) {
+    return (record: unknown): record is Record<string, T> =>
+        !!(
+            typeof record === 'object' &&
+            record &&
+            !Array.isArray(record) &&
+            Object.values(record).every((value) => isThing(value))
+        );
+}
+
+/**
  * Produces a check that the value is an object containing keys that map to checks.
  */
-export function isShape<T extends Record<string, IsShape<any>>>(
+export function isShape<T extends Record<string, AssertFn<any>>>(
     shape: T
-): IsShape<{ [Key in keyof T]: ShapeType<T[Key]> }> {
-    return (val: unknown): val is { [Key in keyof T]: ShapeType<T[Key]> } => {
+): AssertFn<{ [Key in keyof T]: AssertFnType<T[Key]> }> {
+    return (
+        val: unknown
+    ): val is { [Key in keyof T]: AssertFnType<T[Key]> } => {
         if (typeof val !== 'object') {
             return false;
         }
