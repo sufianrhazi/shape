@@ -12,9 +12,11 @@ import {
     isNull,
     isNumber,
     isRecordOf,
+    isRecordWith,
     isShape,
     isString,
     isSymbol,
+    isTuple,
     isUndefined,
 } from './shape';
 
@@ -46,6 +48,48 @@ suite('isRecordOf', () => {
 
     test('empty passes', () => {
         assert.is(true, isRecordOf(isNumber)({}));
+    });
+});
+
+suite('isRecordWith / isTuple', () => {
+    test('keys and values', () => {
+        const assertFn = isRecordWith(
+            isTuple(isEnum('foo', 'bar', 'baz'), isNumber)
+        );
+        assert.is(
+            true,
+            assertFn({
+                foo: 1,
+                bar: 2,
+                baz: 3,
+            })
+        );
+        assert.is(
+            false,
+            assertFn({
+                foo: 1,
+                bar: 'nope',
+                baz: 3,
+            })
+        );
+        assert.is(
+            false,
+            assertFn({
+                foo: 1,
+                bar: 2,
+                baz: 3,
+                bum: 4,
+            })
+        );
+        assert.is(false, assertFn([1, 2, 3]));
+        assert.is(false, assertFn({ foo: 1, bar: 'a', baz: 3 }));
+    });
+
+    test('empty passes', () => {
+        const assertFn = isRecordWith(
+            isTuple(isEnum('foo', 'bar', 'baz'), isNumber)
+        );
+        assert.is(true, assertFn({}));
     });
 });
 

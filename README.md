@@ -42,8 +42,11 @@ And some helpful **assertion function** factories:
 * `isShape({ foo: isNumber, bar: isString }): AssertFn<{ foo: number, bar: string }>` - make a function asserting an object whose keys match the corresponding assertion functions
 * `isEither(isString, isNumber, ...etc)` - make a function asserting one of many assertion functions (via OR)
 * `isArrayOf: <T>(shape: AssertFn<T>) => AssertFn<T[]>` - make a function asserting an array whose values all match an assertion function
+* `isTuple: <L, R>(isLeft: AssertFn<L>, isRight: AssertFn<R>) => AssertFn<[L, R]>` - make a function asserting a tuple
 * `isRecordOf: <T>(shape: AssertFn<T>) => AssertFn<Record<string, T>>` - make a function asserting an object whose
   values all match an assertion function
+* `isRecordWith: <K extends string | number | symbol, V>(isEntry: AssertFn<[K, V]>): AssertFn<Record<K, V>>` - make a function asserting an object whose
+  entries all match an assertion function
 
 And there's one hard-to-describe, but easy-to-use **assertion function**:
 

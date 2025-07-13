@@ -104,6 +104,36 @@ export function isRecordOf<T>(isThing: AssertFn<T>) {
 }
 
 /**
+ * Produces a check that the value is an object whose entries (keys and values) all satisfy the provided check
+ */
+export function isRecordWith<K extends string | number | symbol, V>(
+    isEntry: AssertFn<[K, V]>
+) {
+    return (record: unknown): record is Record<K, V> =>
+        !!(
+            typeof record === 'object' &&
+            record &&
+            !Array.isArray(record) &&
+            Object.entries(record).every((entry) => isEntry(entry))
+        );
+}
+
+/**
+ * Produces a check that the value is an object whose entries (keys and values) all satisfy the provided check
+ */
+export function isTuple<K, V>(isLeft: AssertFn<K>, isRight: AssertFn<V>) {
+    return (pair: unknown): pair is [K, V] =>
+        !!(
+            typeof pair === 'object' &&
+            pair &&
+            Array.isArray(pair) &&
+            pair.length === 2 &&
+            isLeft(pair[0]) &&
+            isRight(pair[1])
+        );
+}
+
+/**
  * Produces a check that the value is an object containing keys that map to checks.
  */
 export function isShape<T extends Record<string, AssertFn<any>>>(
