@@ -1,5 +1,5 @@
 // src/shape.ts
-var version = "1.1.0";
+var version = "1.2.0";
 var isString = (val) => typeof val === "string";
 var isNumber = (val) => typeof val === "number";
 var isBigint = (val) => typeof val === "bigint";
@@ -33,6 +33,12 @@ function isArrayOf(check) {
 function isRecordOf(isThing) {
   return (record) => !!(typeof record === "object" && record && !Array.isArray(record) && Object.values(record).every((value) => isThing(value)));
 }
+function isRecordWith(isEntry) {
+  return (record) => !!(typeof record === "object" && record && !Array.isArray(record) && Object.entries(record).every((entry) => isEntry(entry)));
+}
+function isTuple(isLeft, isRight) {
+  return (pair) => !!(typeof pair === "object" && pair && Array.isArray(pair) && pair.length === 2 && isLeft(pair[0]) && isRight(pair[1]));
+}
 function isShape(shape) {
   return (val) => {
     if (typeof val !== "object") {
@@ -65,10 +71,12 @@ export {
   isNull,
   isNumber,
   isRecordOf,
+  isRecordWith,
   isShape,
   isString,
   isSymbol,
   isTruthy,
+  isTuple,
   isUndefined,
   isUnknown,
   version

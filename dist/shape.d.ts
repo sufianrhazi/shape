@@ -46,6 +46,14 @@ export declare function isArrayOf<T>(check: AssertFn<T>): (val: unknown) => val 
  */
 export declare function isRecordOf<T>(isThing: AssertFn<T>): (record: unknown) => record is Record<string, T>;
 /**
+ * Produces a check that the value is an object whose entries (keys and values) all satisfy the provided check
+ */
+export declare function isRecordWith<K extends string | number | symbol, V>(isEntry: AssertFn<[K, V]>): (record: unknown) => record is Record<K, V>;
+/**
+ * Produces a check that the value is an object whose entries (keys and values) all satisfy the provided check
+ */
+export declare function isTuple<K, V>(isLeft: AssertFn<K>, isRight: AssertFn<V>): (pair: unknown) => pair is [K, V];
+/**
  * Produces a check that the value is an object containing keys that map to checks.
  */
 export declare function isShape<T extends Record<string, AssertFn<any>>>(shape: T): AssertFn<{
