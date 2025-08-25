@@ -53,6 +53,10 @@ And there's one hard-to-describe, but easy-to-use **assertion function**:
 * `function isTruthy<T>(val: T): val is Exclude<T, 0 | -0 | 0n | "" | null | undefined>` - make a function asserting
   just like how `if` works
 
+And if you want a shape with an optional property, mark the **assertion function** with `optional`:
+
+* `optional<T>(fn: AssertFn<T>): AssertFn<T | undefined>` - make a property optional
+
 
 ## Installation
 

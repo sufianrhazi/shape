@@ -18,6 +18,7 @@ import {
     isSymbol,
     isTuple,
     isUndefined,
+    optional,
 } from './shape';
 
 suite('isArrayOf', () => {
@@ -313,5 +314,19 @@ suite('isShape, isEither, isEnum', () => {
         assert.is(false, isMyThing({ type: 'nope', value: 3 }));
         assert.is(false, isMyThing({ type: 'nope', value: '3' }));
         assert.is(false, isMyThing({ type: 'nope', value: 'bar' }));
+    });
+});
+
+suite('optional', () => {
+    const isMyThing = isShape({
+        required: isExact('foo'),
+        optional: optional(isExact('bar')),
+    });
+
+    test('basic functionality', () => {
+        assert.is(true, isMyThing({ required: 'foo' }));
+        assert.is(true, isMyThing({ required: 'foo', optional: undefined }));
+        assert.is(true, isMyThing({ required: 'foo', optional: 'bar' }));
+        assert.is(false, isMyThing({ required: 'foo', optional: 'baz' }));
     });
 });

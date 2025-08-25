@@ -8,6 +8,9 @@ export const version: string = LIB_VERSION;
  * Each AssertFn<T> is a function that proves an unknown value is of type T
  */
 export type AssertFn<T> = (val: unknown) => val is T;
+export type OptionalAssertFn<T> = AssertFn<T> & {
+    __optional: true;
+};
 
 /**
  * Turn an AssertFn<T> type into just T
@@ -31,6 +34,15 @@ export const isSymbol: AssertFn<symbol> = (val): val is symbol =>
 
 export const isUndefined: AssertFn<undefined> = (val): val is undefined =>
     val === undefined;
+
+export const optional = <T>(
+    fn: AssertFn<T>
+): OptionalAssertFn<T | undefined> => {
+    return Object.assign(
+        (val: unknown): val is T | undefined => val === undefined || fn(val),
+        { __optional: true } as const
+    );
+};
 
 export const isUnknown: AssertFn<unknown> = (val): val is unknown => true;
 
@@ -133,15 +145,37 @@ export function isTuple<K, V>(isLeft: AssertFn<K>, isRight: AssertFn<V>) {
         );
 }
 
+type OptionalKeys<
+    T extends Record<string, OptionalAssertFn<any> | AssertFn<any>>,
+> = {
+    [Key in keyof T]: T[Key] extends OptionalAssertFn<any> ? Key : never;
+}[keyof T];
+
+// Note: The wacky extends infer Obj ? { [Key in keyof Obj]: Obj[Key] } : never
+// allows for "simplifying" the type when presented to users.
+// Without this, users see ShapeType<...> which is not helpful
+type ShapeType<
+    T extends Record<string, OptionalAssertFn<any> | AssertFn<any>>,
+> = {
+    [Key in keyof T as Exclude<Key, OptionalKeys<T>>]: T[Key] extends AssertFn<
+        infer V
+    >
+        ? V
+        : never;
+} & {
+    [Key in OptionalKeys<T>]?: T[Key] extends OptionalAssertFn<infer V>
+        ? V
+        : unknown;
+} extends infer Obj
+    ? { [Key in keyof Obj]: Obj[Key] }
+    : never;
 /**
  * Produces a check that the value is an object containing keys that map to checks.
  */
-export function isShape<T extends Record<string, AssertFn<any>>>(
-    shape: T
-): AssertFn<{ [Key in keyof T]: AssertFnType<T[Key]> }> {
-    return (
-        val: unknown
-    ): val is { [Key in keyof T]: AssertFnType<T[Key]> } => {
+export function isShape<
+    T extends Record<string, OptionalAssertFn<any> | AssertFn<any>>,
+>(shape: T): AssertFn<ShapeType<T>> {
+    return (val: unknown): val is ShapeType<T> => {
         if (typeof val !== 'object') {
             return false;
         }
@@ -150,6 +184,9 @@ export function isShape<T extends Record<string, AssertFn<any>>>(
         }
         for (const [key, check] of Object.entries(shape)) {
             if (!(key in val)) {
+                if ((check as OptionalAssertFn<any>).__optional) {
+                    continue;
+                }
                 return false;
             }
             if (!check((val as Record<string, any>)[key])) {
