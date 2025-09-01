@@ -54,9 +54,9 @@ export declare function isRecordOf<T>(isThing: AssertFn<T>): (record: unknown) =
  */
 export declare function isRecordWith<K extends string | number | symbol, V>(isEntry: AssertFn<[K, V]>): (record: unknown) => record is Record<K, V>;
 /**
- * Produces a check that the value is an object whose entries (keys and values) all satisfy the provided check
+ * Produces a check that the value is an arrays whose items all satisfy the provided check
  */
-export declare function isTuple<K, V>(isLeft: AssertFn<K>, isRight: AssertFn<V>): (pair: unknown) => pair is [K, V];
+export declare function isTuple<T extends AssertFn<any>[]>(...fns: T): (val: unknown) => val is { [P in keyof T]: AssertFnType<T[P]>; };
 type OptionalKeys<T extends Record<string, OptionalAssertFn<any> | AssertFn<any>>> = {
     [Key in keyof T]: T[Key] extends OptionalAssertFn<any> ? Key : never;
 }[keyof T];

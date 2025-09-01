@@ -1,6 +1,6 @@
 {
   "name": "@srhazi/shape",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Composable runtime value checks that play well with TypeScript's type narrowing",
   "main": "dist/shape.js",
   "type": "module",

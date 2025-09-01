@@ -1,5 +1,5 @@
 // src/shape.ts
-var version = "1.3.0";
+var version = "1.4.0";
 var isString = (val) => typeof val === "string";
 var isNumber = (val) => typeof val === "number";
 var isBigint = (val) => typeof val === "bigint";
@@ -42,8 +42,10 @@ function isRecordOf(isThing) {
 function isRecordWith(isEntry) {
   return (record) => !!(typeof record === "object" && record && !Array.isArray(record) && Object.entries(record).every((entry) => isEntry(entry)));
 }
-function isTuple(isLeft, isRight) {
-  return (pair) => !!(typeof pair === "object" && pair && Array.isArray(pair) && pair.length === 2 && isLeft(pair[0]) && isRight(pair[1]));
+function isTuple(...fns) {
+  return (val) => {
+    return !!(isArray(val) && val.length === fns.length && fns.every((fn, i) => fns[i](val[i])));
+  };
 }
 function isShape(shape) {
   return (val) => {
