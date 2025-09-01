@@ -6,6 +6,9 @@ export declare const version: string;
  * Each AssertFn<T> is a function that proves an unknown value is of type T
  */
 export type AssertFn<T> = (val: unknown) => val is T;
+export type OptionalAssertFn<T> = AssertFn<T> & {
+    __optional: true;
+};
 /**
  * Turn an AssertFn<T> type into just T
  */
@@ -16,6 +19,7 @@ export declare const isBigint: AssertFn<bigint>;
 export declare const isBoolean: AssertFn<boolean>;
 export declare const isSymbol: AssertFn<symbol>;
 export declare const isUndefined: AssertFn<undefined>;
+export declare const optional: <T>(fn: AssertFn<T>) => OptionalAssertFn<T | undefined>;
 export declare const isUnknown: AssertFn<unknown>;
 export declare const isNull: AssertFn<null>;
 export declare const isArray: AssertFn<unknown[]>;
@@ -53,10 +57,19 @@ export declare function isRecordWith<K extends string | number | symbol, V>(isEn
  * Produces a check that the value is an object whose entries (keys and values) all satisfy the provided check
  */
 export declare function isTuple<K, V>(isLeft: AssertFn<K>, isRight: AssertFn<V>): (pair: unknown) => pair is [K, V];
+type OptionalKeys<T extends Record<string, OptionalAssertFn<any> | AssertFn<any>>> = {
+    [Key in keyof T]: T[Key] extends OptionalAssertFn<any> ? Key : never;
+}[keyof T];
+type ShapeType<T extends Record<string, OptionalAssertFn<any> | AssertFn<any>>> = {
+    [Key in keyof T as Exclude<Key, OptionalKeys<T>>]: T[Key] extends AssertFn<infer V> ? V : never;
+} & {
+    [Key in OptionalKeys<T>]?: T[Key] extends OptionalAssertFn<infer V> ? V : unknown;
+} extends infer Obj ? {
+    [Key in keyof Obj]: Obj[Key];
+} : never;
 /**
  * Produces a check that the value is an object containing keys that map to checks.
  */
-export declare function isShape<T extends Record<string, AssertFn<any>>>(shape: T): AssertFn<{
-    [Key in keyof T]: AssertFnType<T[Key]>;
-}>;
+export declare function isShape<T extends Record<string, OptionalAssertFn<any> | AssertFn<any>>>(shape: T): AssertFn<ShapeType<T>>;
+export {};
 //# sourceMappingURL=shape.d.ts.map

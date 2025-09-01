@@ -40,16 +40,23 @@ __export(shape_exports, {
   isTuple: () => isTuple,
   isUndefined: () => isUndefined,
   isUnknown: () => isUnknown,
+  optional: () => optional,
   version: () => version
 });
 module.exports = __toCommonJS(shape_exports);
-var version = "1.2.0";
+var version = "1.3.0";
 var isString = (val) => typeof val === "string";
 var isNumber = (val) => typeof val === "number";
 var isBigint = (val) => typeof val === "bigint";
 var isBoolean = (val) => typeof val === "boolean";
 var isSymbol = (val) => typeof val === "symbol";
 var isUndefined = (val) => val === void 0;
+var optional = (fn) => {
+  return Object.assign(
+    (val) => val === void 0 || fn(val),
+    { __optional: true }
+  );
+};
 var isUnknown = (val) => true;
 var isNull = (val) => val === null;
 var isArray = (val) => Array.isArray(val);
@@ -93,6 +100,9 @@ function isShape(shape) {
     }
     for (const [key, check] of Object.entries(shape)) {
       if (!(key in val)) {
+        if (check.__optional) {
+          continue;
+        }
         return false;
       }
       if (!check(val[key])) {
