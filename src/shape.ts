@@ -131,18 +131,16 @@ export function isRecordWith<K extends string | number | symbol, V>(
 }
 
 /**
- * Produces a check that the value is an object whose entries (keys and values) all satisfy the provided check
+ * Produces a check that the value is an arrays whose items all satisfy the provided check
  */
-export function isTuple<K, V>(isLeft: AssertFn<K>, isRight: AssertFn<V>) {
-    return (pair: unknown): pair is [K, V] =>
-        !!(
-            typeof pair === 'object' &&
-            pair &&
-            Array.isArray(pair) &&
-            pair.length === 2 &&
-            isLeft(pair[0]) &&
-            isRight(pair[1])
+export function isTuple<T extends AssertFn<any>[]>(...fns: T) {
+    return (val: unknown): val is { [P in keyof T]: AssertFnType<T[P]> } => {
+        return !!(
+            isArray(val) &&
+            val.length === fns.length &&
+            fns.every((fn, i) => fns[i](val[i]))
         );
+    };
 }
 
 type OptionalKeys<

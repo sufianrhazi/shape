@@ -21,6 +21,9 @@ import {
     optional,
 } from './shape';
 
+type AssertIs<T, V> = T extends V ? (V extends T ? true : false) : false;
+function assertType<T, V>(_isTrue: AssertIs<T, V>) {}
+
 suite('isArrayOf', () => {
     test('numbers', () => {
         assert.is(true, isArrayOf(isNumber)([1, 2, 3]));
@@ -91,6 +94,52 @@ suite('isRecordWith / isTuple', () => {
             isTuple(isEnum('foo', 'bar', 'baz'), isNumber)
         );
         assert.is(true, assertFn({}));
+    });
+});
+
+suite('isTuple', () => {
+    const isStringTuple = isTuple(isString);
+    const isStringNumberTuple = isTuple(isString, isNumber);
+    const isFooStringBarNumberTuple = isTuple(
+        isExact('foo'),
+        isString,
+        isExact('bar'),
+        isNumber
+    );
+
+    test('1 entry', () => {
+        assert.is(false, isStringTuple([]));
+        assert.is(true, isStringTuple(['hello']));
+        assert.is(false, isStringTuple([3]));
+        assert.is(false, isStringTuple(['hello', 3]));
+    });
+
+    test('2 entries', () => {
+        assert.is(false, isStringNumberTuple(['hi']));
+        assert.is(false, isStringNumberTuple(['hello', 'hey']));
+        assert.is(true, isStringNumberTuple(['hello', 3]));
+        assert.is(false, isStringNumberTuple(['hello', 3, 'hey']));
+
+        const x: unknown = null;
+        if (isStringNumberTuple(x)) {
+            // Type checking for 2-tuple
+            assertType<[string, number], typeof x>(true);
+        }
+    });
+
+    test('multiple entries', () => {
+        assert.is(true, isFooStringBarNumberTuple(['foo', 'hello', 'bar', 5]));
+        assert.is(false, isFooStringBarNumberTuple(['foo', 4, 'bar', 5]));
+        assert.is(
+            false,
+            isFooStringBarNumberTuple(['foo', 'hey', 'bar', 'howdy'])
+        );
+
+        const x: unknown = null;
+        if (isFooStringBarNumberTuple(x)) {
+            // Type checking for variadic tuples
+            assertType<['foo', string, 'bar', number], typeof x>(true);
+        }
     });
 });
 
