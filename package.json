@@ -1,8 +1,9 @@
 {
   "name": "@srhazi/shape",
-  "version": "1.4.0",
+  "version": "2.0.0",
   "description": "Composable runtime value checks that play well with TypeScript's type narrowing",
-  "main": "dist/shape.js",
+  "main": "dist/shape.cjs",
+  "types": "dist/shape.d.ts",
   "type": "module",
   "files": [
     "./dist/shape.mjs",
@@ -14,9 +15,9 @@
   ],
   "exports": {
     ".": {
-      "import": "./dist/shape.mjs",
       "types": "./dist/shape.d.ts",
-      "require": "./dist/index.cjs"
+      "import": "./dist/shape.mjs",
+      "require": "./dist/shape.cjs"
     }
   },
   "devDependencies": {
